@@ -18,10 +18,10 @@ exports.handler = function (event, context, callback) {
   }
 
   twitter.get('statuses/user_timeline', params, function (error, tweets, response) {
-    if (!error) {
-      upload(tweets)
-    } else {
+    if (error) {
       console.log(error, error.stack)
+    } else {
+      upload(tweets)
     }
   })
 }
@@ -34,12 +34,42 @@ function upload (data) {
     Bucket: process.env.AWS_S3_BUCKET,
     Key: process.env.AWS_S3_KEY,
     Body: JSON.stringify(data),
-    ContentType: 'application/json'
+    ContentType: 'application/json',
+    CacheControl: process.env.AWS_S3_CACHE_CONTROL
   }
 
   s3.upload(params, function (error, data) {
     if (error) {
       console.log(error, error.stack)
+    } else {
+      console.log('Sucessfully uploaded tweets.json to S3')
+    }
+  })
+
+  invalidate()
+}
+
+function invalidate () {
+  const cloudfront = new AWS.CloudFront()
+
+  let params = {
+    DistributionId: process.env.AWS_CLOUDFRONT_DISTRIBUTION,
+    InvalidationBatch: {
+      CallerReference: '' + new Date().getTime(),
+      Paths: {
+        Quantity: 1,
+        Items: [
+          process.env.AWS_S3_KEY
+        ]
+      }
+    }
+  }
+
+  cloudfront.createInvalidation(params, function (error, data) {
+    if (error) {
+      console.log(error, error.stack)
+    } else {
+      console.log(data)
     }
   })
 }
