@@ -4,19 +4,4 @@ A simple project for authenticating with Twitter and caching a user's tweets in 
 
 ## Usage
 
-Once you have a `tweets.json` file you can easily display it with JavaScript.
-
-    (function () {
-        $.get('/tweets.json', function (data) {
-            var str = '<ul>';
-
-            for (var i = data.length - 1; i >= 0; i--) {
-                str += '<li>';
-                str +=  data[i].text;
-                str += '</li>';
-            }
-
-            str += '</ul>';
-            $("#twitter-timeline").html(str);
-        });
-    })();
+Once you have a `tweets.json` file you can easily display it using the [Tweet Reader Client](https://github.com/eberkund/tweet-reader-client)
