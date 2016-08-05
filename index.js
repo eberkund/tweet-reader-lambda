@@ -22,6 +22,7 @@ exports.handler = function (event, context, callback) {
       console.log(error, error.stack)
     } else {
       upload(tweets)
+      invalidate()
     }
   })
 }
@@ -38,6 +39,8 @@ function upload (data) {
     CacheControl: process.env.AWS_S3_CACHE_CONTROL
   }
 
+  console.log('Uploading to S3 bucket...')
+
   s3.upload(params, function (error, data) {
     if (error) {
       console.log(error, error.stack)
@@ -45,8 +48,6 @@ function upload (data) {
       console.log('Sucessfully uploaded tweets.json to S3')
     }
   })
-
-  invalidate()
 }
 
 function invalidate () {
@@ -59,17 +60,19 @@ function invalidate () {
       Paths: {
         Quantity: 1,
         Items: [
-          process.env.AWS_S3_KEY
+          '/' + process.env.AWS_S3_KEY
         ]
       }
     }
   }
 
+  console.log('Invalidating CloudFront distribution...')
+
   cloudfront.createInvalidation(params, function (error, data) {
     if (error) {
       console.log(error, error.stack)
     } else {
-      console.log(data)
+      console.log('Sucessfully invalidated tweets.json on CloudFront')
     }
   })
 }
