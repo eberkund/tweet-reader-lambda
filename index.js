@@ -2,6 +2,7 @@
 
 const Twitter = require('twitter')
 const AWS = require('aws-sdk')
+const moment = require('moment')
 
 require('dotenv').config()
 
@@ -20,10 +21,19 @@ exports.handler = function (event, context, callback) {
   twitter.get('statuses/user_timeline', params, function (error, tweets, response) {
     if (error) {
       console.log(error, error.stack)
-    } else {
-      upload(tweets)
-      invalidate()
+      return
+    } 
+
+    let latestTweet = moment(new Date(tweets[0].created_at))
+    let lastHour = moment().subtract(1, 'hours')
+
+    if (latestTweet.isBefore(lastHour)) {
+      console.log('No new tweets to upload.')
+      return
     }
+
+    upload(tweets)
+    invalidate()
   })
 }
 
