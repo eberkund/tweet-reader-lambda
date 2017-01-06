@@ -16,7 +16,9 @@
     "node-lambda": "^0.8.5"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node-lambda run",
+    "package": "node-lambda package",
+    "deploy": "node-lambda deploy"
   },
   "author": "Erik Berkun-Drevnig",
   "license": "ISC"
