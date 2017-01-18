@@ -17,29 +17,30 @@ exports.handler = function (event, context, callback) {
   let params = {
     screen_name: process.env.TWITTER_SCREEN_NAME
   }
+  
+  twitter.get('statuses/user_timeline', params, tweetHandler)
+}
 
-  twitter.get('statuses/user_timeline', params, function (error, tweets, response) {
-    if (error) {
-      console.log(error, error.stack)
-      return
-    } 
+function tweetHandler (error, tweets, response) {
+  if (error) {
+    console.log(error, error.stack)
+    return
+  } 
 
-    let latestTweet = moment(new Date(tweets[0].created_at))
-    let lastHour = moment().subtract(1, 'hours')
+  let latestTweet = moment(new Date(tweets[0].created_at))
+  let lastHour = moment().subtract(1, 'hours')
 
-    if (latestTweet.isBefore(lastHour)) {
-      console.log('No new tweets to upload.')
-      return
-    }
+  if (latestTweet.isBefore(lastHour)) {
+    console.log('No new tweets to upload.')
+    return
+  }
 
-    upload(tweets)
-    invalidate()
-  })
+  upload(tweets)  
+  invalidate()
 }
 
 function upload (data) {
   let s3 = new AWS.S3()
-  data.length = 2
 
   let params = {
     Bucket: process.env.AWS_S3_BUCKET,
